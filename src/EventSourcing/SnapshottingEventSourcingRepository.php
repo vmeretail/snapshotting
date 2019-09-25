@@ -88,9 +88,13 @@ class SnapshottingEventSourcingRepository implements Repository
                 new Snapshot($aggregate)
             );
         }
+
+        return;
     }
 
-    // ToDo: Rebuild
+    /**
+     * {@inheritdoc}
+     */
     public function rebuild($id) : void
     {
         $eventStream = $this->eventStore->load($id);
@@ -100,5 +104,7 @@ class SnapshottingEventSourcingRepository implements Repository
                 new Snapshot($this->load($id))
             );
         }
+
+        return;
     }
 }
