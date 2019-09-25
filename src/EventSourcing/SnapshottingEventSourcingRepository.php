@@ -60,6 +60,23 @@ class SnapshottingEventSourcingRepository implements Repository
     /**
      * {@inheritdoc}
      */
+    public function loadUntilPlayhead($id, $playhead) : AggregateRoot
+    {
+        $snapshot = $this->snapshotRepository->load($id);
+        if ($snapshot === null || $snapshot->getPlayhead() > $playhead) {
+            return $this->eventSourcingRepository->loadUntilPlayhead($id, $playhead);
+        }
+
+        $aggregateRoot = $snapshot->getAggregateRoot();
+        $aggregateRoot->initializeState(
+            $this->eventStore->loadFromPlayheadSlice($id, $snapshot->getPlayhead() + 1, $playhead)
+        );
+        return $aggregateRoot;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function save(AggregateRoot $aggregate) : void
     {
         $takeSnapshot = $this->trigger->shouldSnapshot($aggregate);
